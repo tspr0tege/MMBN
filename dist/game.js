@@ -2977,9 +2977,6 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         ]);
       }
     }
-    onClick("tile", (tile) => {
-      tile.changeColor();
-    });
     const player = add([
       "player",
       sprite("rockman", { frame: 0 }),
@@ -2989,42 +2986,72 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
       layer("game")
     ]);
     onKeyPress("w", () => {
-      const { x, y } = player.coords;
-      if (y > 0 && floor[y - 1][x].traversable) {
-        player.play("move");
-        player.pos.y -= TILE_HEIGHT;
-        player.coords.y -= 1;
+      if (player.canMove) {
+        const { x, y } = player.coords;
+        if (y > 0 && floor[y - 1][x].traversable) {
+          player.play("move");
+          player.pos.y -= TILE_HEIGHT;
+          player.coords.y -= 1;
+          player.canMove = false;
+          setTimeout(() => {
+            player.canMove = true;
+          }, player.moveLimit);
+        }
       }
     });
     onKeyPress("a", () => {
-      const { x, y } = player.coords;
-      if (x > 0 && floor[y][x - 1].traversable) {
-        player.play("move");
-        player.pos.x -= TILE_WIDTH;
-        player.coords.x -= 1;
+      if (player.canMove) {
+        const { x, y } = player.coords;
+        if (x > 0 && floor[y][x - 1].traversable) {
+          player.play("move");
+          player.pos.x -= TILE_WIDTH;
+          player.coords.x -= 1;
+          player.canMove = false;
+          setTimeout(() => {
+            player.canMove = true;
+          }, player.moveLimit);
+        }
       }
     });
     onKeyPress("s", () => {
-      const { x, y } = player.coords;
-      if (y < 2 && floor[y + 1][x].traversable) {
-        player.play("move");
-        player.pos.y += TILE_HEIGHT;
-        player.coords.y += 1;
+      if (player.canMove) {
+        const { x, y } = player.coords;
+        if (y < 2 && floor[y + 1][x].traversable) {
+          player.play("move");
+          player.pos.y += TILE_HEIGHT;
+          player.coords.y += 1;
+          player.canMove = false;
+          setTimeout(() => {
+            player.canMove = true;
+          }, player.moveLimit);
+        }
       }
     });
     onKeyPress("d", () => {
-      const { x, y } = player.coords;
-      if (x < 6 && floor[y][x + 1].traversable) {
-        player.play("move");
-        player.pos.x += TILE_WIDTH;
-        player.coords.x += 1;
+      if (player.canMove) {
+        const { x, y } = player.coords;
+        if (x < 6 && floor[y][x + 1].traversable) {
+          player.play("move");
+          player.pos.x += TILE_WIDTH;
+          player.coords.x += 1;
+          player.canMove = false;
+          setTimeout(() => {
+            player.canMove = true;
+          }, player.moveLimit);
+        }
       }
     });
     onKeyPress("space", () => {
       player.play("hurt");
     });
     onMousePress("left", () => {
-      player.play("fire");
+      if (player.canShoot) {
+        player.play("fire");
+        player.canShoot = false;
+        setTimeout(() => {
+          player.canShoot = true;
+        }, player.shootLimit);
+      }
     });
     player.onUpdate(() => {
       if (!player.curAnim()) {
@@ -3050,11 +3077,15 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
   __name(floorP, "floorP");
   function mega() {
     return {
-      id: "player",
+      id: "mega",
       coords: {
         x: 0,
         y: 0
-      }
+      },
+      canMove: true,
+      moveLimit: 500,
+      canShoot: true,
+      shootLimit: 500
     };
   }
   __name(mega, "mega");
