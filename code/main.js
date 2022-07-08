@@ -9,9 +9,13 @@ kaboom({
   height: TILE_HEIGHT*7,
   scale: 3,
   logMax: 1
-})
+});
 
-loadRoot('sprites/')
+loadRoot('sounds/');
+loadSound('sweep', 'sfx-sweep.wav');
+loadSound('crack', 'sfx-crack.wav');
+loadSound('zap', 'sfx-zap.wav');
+loadRoot('sprites/');
 loadSprite('rockman', 'rockexe.png', {
   sliceX: 4,
   sliceY: 4,
@@ -100,18 +104,20 @@ scene('game', () => {
   }
 
   // onClick('tile', (tile) => {
-  //   // if (isMouseReleased('right')) {
-  //     tile.changeColor();
-  //   // }
+  //   tile.changeColor();
   // });
 
   onClick('tile', (tile) => {
-    tile.crack();
+    if (!tile.isCracked) {
+      tile.crack();
+      play('crack', {detune: rand(-1500, -1000)});
+    }
   });
   
   function breakCracked({ x, y }) {
     if (floor[y][x].isCracked) {
       floor[y][x].break();
+      play('crack', {detune: rand(-200, 200)});
     }
   }
   
@@ -188,9 +194,10 @@ scene('game', () => {
     player.play('hurt');
   });
 
-  onMousePress('left', () => {
+  onMousePress('right', () => {
     if (player.canShoot) {
-      player.play('fire');
+      player.play('fire', {volume: 0.4});
+      play('zap');
       player.canShoot = false
       setTimeout(() => {player.canShoot = true}, player.shootLimit)
     }

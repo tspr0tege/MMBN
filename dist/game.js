@@ -2921,6 +2921,8 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     scale: 3,
     logMax: 1
   });
+  loadSound("crack", "sounds/sfx-crack.wav");
+  loadSound("zap", "sounds/sfx-zap.wav");
   loadRoot("sprites/");
   loadSprite("rockman", "rockexe.png", {
     sliceX: 4,
@@ -2978,11 +2980,15 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
       }
     }
     onClick("tile", (tile) => {
-      tile.crack();
+      if (!tile.isCracked) {
+        tile.crack();
+        play("crack", { detune: rand(-200, 200) });
+      }
     });
     function breakCracked({ x, y }) {
       if (floor[y][x].isCracked) {
         floor[y][x].break();
+        play("crack", { detune: rand(-1500, -1e3) });
       }
     }
     __name(breakCracked, "breakCracked");
@@ -3057,9 +3063,10 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     onKeyPress("space", () => {
       player.play("hurt");
     });
-    onMousePress("left", () => {
+    onMousePress("right", () => {
       if (player.canShoot) {
-        player.play("fire");
+        player.play("fire", { volume: 0.4 });
+        play("zap");
         player.canShoot = false;
         setTimeout(() => {
           player.canShoot = true;
