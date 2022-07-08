@@ -70,8 +70,6 @@ const map = [
   '      '
 ]
 
-const floor = [[],[],[]];
-
 function initFloorFrame(x,y) {
   let num = y * 8;
   return x > 2 ? num+4 : num; 
@@ -84,6 +82,8 @@ scene('game', () => {
     'game',
     'ui'
   ], 'game');
+  
+  const floor = [[],[],[]];
 
   for (let y=0; y < 3; y++) {
     for (let x=0; x < 6; x++) {
@@ -104,6 +104,16 @@ scene('game', () => {
   //     tile.changeColor();
   //   // }
   // });
+
+  onClick('tile', (tile) => {
+    tile.crack();
+  });
+  
+  function breakCracked({ x, y }) {
+    if (floor[y][x].isCracked) {
+      floor[y][x].break();
+    }
+  }
   
   const player = add([
     'player',
@@ -121,6 +131,7 @@ scene('game', () => {
       // if (player.pos.y-TILE_HEIGHT >= (TILE_HEIGHT*3)+5) {
         player.play('move');
         player.pos.y -= TILE_HEIGHT;
+        breakCracked(player.coords);
         player.coords.y -= 1;
         player.canMove = false;
         setTimeout(() => {player.canMove = true}, player.moveLimit);
@@ -135,6 +146,7 @@ scene('game', () => {
       if (x > 0 && floor[y][x-1].traversable) {
         player.play('move');
         player.pos.x -= TILE_WIDTH;
+        breakCracked(player.coords);
         player.coords.x -= 1;
         player.canMove = false;
         setTimeout(() => {player.canMove = true}, player.moveLimit);
@@ -149,6 +161,7 @@ scene('game', () => {
       if (y < 2 && floor[y+1][x].traversable) {
         player.play('move');
         player.pos.y += TILE_HEIGHT;
+        breakCracked(player.coords);
         player.coords.y += 1;
         player.canMove = false;
         setTimeout(() => {player.canMove = true}, player.moveLimit);
@@ -163,6 +176,7 @@ scene('game', () => {
       if (x < 6 && floor[y][x+1].traversable) {
         player.play('move');
         player.pos.x += TILE_WIDTH;
+        breakCracked(player.coords);
         player.coords.x += 1;
         player.canMove = false;
         setTimeout(() => {player.canMove = true}, player.moveLimit);
@@ -199,6 +213,7 @@ function floorP(value = true) {
   return {
     id: 'floorP',
     traversable: value,
+    isCracked: false,
     changeColor() {
       if (([0,8,16]).includes(this.frame)) {
         this.frame += 4;
@@ -206,6 +221,24 @@ function floorP(value = true) {
         this.frame -= 4;
       }
       this.traversable = !this.traversable;
+    },
+    crack() {
+      this.frame += 1;
+      this.isCracked = true;
+    },
+    break() {
+      if (this.isCracked) {
+        this.frame += 1;
+      } else {
+        this.frame += 2;
+      }
+      this.traversable = false;
+      setTimeout(this.repair, 5000);
+    },
+    repair() {
+      this.traversable = true;
+      this.isCracked = false;
+      this.frame = Math.floor(this.frame / 8) * 8;
     }
   }
 }
@@ -218,8 +251,8 @@ function mega() {
       y: 0
     },
     canMove: true,
-    moveLimit: 500,
+    moveLimit: 250,
     canShoot: true,
-    shootLimit: 500,
+    shootLimit: 250,
   }
 }

@@ -2952,7 +2952,6 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     sliceX: 8,
     sliceY: 3
   });
-  var floor = [[], [], []];
   function initFloorFrame(x, y) {
     let num = y * 8;
     return x > 2 ? num + 4 : num;
@@ -2964,6 +2963,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
       "game",
       "ui"
     ], "game");
+    const floor = [[], [], []];
     for (let y = 0; y < 3; y++) {
       for (let x = 0; x < 6; x++) {
         floor[y][x] = add([
@@ -2977,6 +2977,15 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         ]);
       }
     }
+    onClick("tile", (tile) => {
+      tile.crack();
+    });
+    function breakCracked({ x, y }) {
+      if (floor[y][x].isCracked) {
+        floor[y][x].break();
+      }
+    }
+    __name(breakCracked, "breakCracked");
     const player = add([
       "player",
       sprite("rockman", { frame: 0 }),
@@ -2991,6 +3000,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         if (y > 0 && floor[y - 1][x].traversable) {
           player.play("move");
           player.pos.y -= TILE_HEIGHT;
+          breakCracked(player.coords);
           player.coords.y -= 1;
           player.canMove = false;
           setTimeout(() => {
@@ -3005,6 +3015,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         if (x > 0 && floor[y][x - 1].traversable) {
           player.play("move");
           player.pos.x -= TILE_WIDTH;
+          breakCracked(player.coords);
           player.coords.x -= 1;
           player.canMove = false;
           setTimeout(() => {
@@ -3019,6 +3030,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         if (y < 2 && floor[y + 1][x].traversable) {
           player.play("move");
           player.pos.y += TILE_HEIGHT;
+          breakCracked(player.coords);
           player.coords.y += 1;
           player.canMove = false;
           setTimeout(() => {
@@ -3033,6 +3045,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         if (x < 6 && floor[y][x + 1].traversable) {
           player.play("move");
           player.pos.x += TILE_WIDTH;
+          breakCracked(player.coords);
           player.coords.x += 1;
           player.canMove = false;
           setTimeout(() => {
@@ -3064,6 +3077,7 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     return {
       id: "floorP",
       traversable: value,
+      isCracked: false,
       changeColor() {
         if ([0, 8, 16].includes(this.frame)) {
           this.frame += 4;
@@ -3071,6 +3085,24 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
           this.frame -= 4;
         }
         this.traversable = !this.traversable;
+      },
+      crack() {
+        this.frame += 1;
+        this.isCracked = true;
+      },
+      break() {
+        if (this.isCracked) {
+          this.frame += 1;
+        } else {
+          this.frame += 2;
+        }
+        this.traversable = false;
+        setTimeout(this.repair, 5e3);
+      },
+      repair() {
+        this.traversable = true;
+        this.isCracked = false;
+        this.frame = Math.floor(this.frame / 8) * 8;
       }
     };
   }
@@ -3083,9 +3115,9 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         y: 0
       },
       canMove: true,
-      moveLimit: 500,
+      moveLimit: 250,
       canShoot: true,
-      shootLimit: 500
+      shootLimit: 250
     };
   }
   __name(mega, "mega");
