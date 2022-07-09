@@ -46,22 +46,37 @@ loadSprite('floor-panel', 'floors.png', {
   sliceX: 8,
   sliceY: 3
 });
+loadSprite('mettaur', 'mettaur.png', {
+  sliceX: 4,
+  sliceY: 4,
+  anims: {
+    attack: {
+      from: 1,
+      to: 10,
+      speed: 12
+    },
+    hide: {
+      from: 11,
+      to: 15,
+      speed: 14
+    }
+  }
+});
+loadSprite('mAtk', 'mettaur-atk.png', {
+  sliceX: 3,
+  sliceY: 3,
+  anims: {
+    swipe: {
+      from: 0,
+      to: 6,
+      speed: 12
+    }
+  }
+});
 
 const config = {
   width: TILE_WIDTH,
-  height: TILE_HEIGHT,
-  '=': () => [
-    sprite('floor-panel', {frame: 0}),
-    origin('left')
-  ],
-  '-': () => [
-    sprite('floor-panel', {frame: 8}),
-    origin('left')
-  ],
-  '_': () => [
-    sprite('floor-panel', {frame: 16}),
-    origin('left')
-  ],
+  height: TILE_HEIGHT
 }
 
 const map = [
@@ -107,12 +122,12 @@ scene('game', () => {
   //   tile.changeColor();
   // });
 
-  onClick('tile', (tile) => {
-    if (!tile.isCracked) {
-      tile.crack();
-      play('crack', {detune: rand(-1500, -1000)});
-    }
-  });
+  // onClick('tile', (tile) => {
+  //   if (!tile.isCracked) {
+  //     tile.crack();
+  //     play('crack', {detune: rand(-1500, -1000)});
+  //   }
+  // });
   
   function breakCracked({ x, y }) {
     if (floor[y][x].isCracked) {
@@ -127,6 +142,14 @@ scene('game', () => {
     pos((TILE_WIDTH/2)+5, (TILE_HEIGHT*3)+20),
     origin('bot'),
     mega(),
+    layer('game')
+  ]);
+
+  add([
+    'mettaur',
+    sprite('mettaur', {frame: 0}),
+    origin('bot'),
+    pos((TILE_WIDTH*6) -25, (TILE_HEIGHT*3) +20),
     layer('game')
   ]);
 

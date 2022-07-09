@@ -2921,8 +2921,10 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     scale: 3,
     logMax: 1
   });
-  loadSound("crack", "sounds/sfx-crack.wav");
-  loadSound("zap", "sounds/sfx-zap.wav");
+  loadRoot("sounds/");
+  loadSound("sweep", "sfx-sweep.wav");
+  loadSound("crack", "sfx-crack.wav");
+  loadSound("zap", "sfx-zap.wav");
   loadRoot("sprites/");
   loadSprite("rockman", "rockexe.png", {
     sliceX: 4,
@@ -2954,6 +2956,33 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
     sliceX: 8,
     sliceY: 3
   });
+  loadSprite("mettaur", "mettaur.png", {
+    sliceX: 4,
+    sliceY: 4,
+    anims: {
+      attack: {
+        from: 1,
+        to: 10,
+        speed: 12
+      },
+      hide: {
+        from: 11,
+        to: 15,
+        speed: 14
+      }
+    }
+  });
+  loadSprite("mAtk", "mettaur-atk.png", {
+    sliceX: 3,
+    sliceY: 3,
+    anims: {
+      swipe: {
+        from: 0,
+        to: 6,
+        speed: 12
+      }
+    }
+  });
   function initFloorFrame(x, y) {
     let num = y * 8;
     return x > 2 ? num + 4 : num;
@@ -2979,16 +3008,10 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
         ]);
       }
     }
-    onClick("tile", (tile) => {
-      if (!tile.isCracked) {
-        tile.crack();
-        play("crack", { detune: rand(-200, 200) });
-      }
-    });
     function breakCracked({ x, y }) {
       if (floor[y][x].isCracked) {
         floor[y][x].break();
-        play("crack", { detune: rand(-1500, -1e3) });
+        play("crack", { detune: rand(-200, 200) });
       }
     }
     __name(breakCracked, "breakCracked");
@@ -2998,6 +3021,13 @@ vec4 frag(vec3 pos, vec2 uv, vec4 color, sampler2D tex) {
       pos(TILE_WIDTH / 2 + 5, TILE_HEIGHT * 3 + 20),
       origin("bot"),
       mega(),
+      layer("game")
+    ]);
+    add([
+      "mettaur",
+      sprite("mettaur", { frame: 0 }),
+      origin("bot"),
+      pos(TILE_WIDTH * 6 - 25, TILE_HEIGHT * 3 + 20),
       layer("game")
     ]);
     onKeyPress("w", () => {
